@@ -7,7 +7,7 @@ namespace RedisObjectCache
     //<?xml version="1.0" encoding="utf-8" ?>
     //<configuration>
     //  <configSections>
-    //    <section name="redisCache" type="RedisObjectCache.RedisCacheConfiguration" />
+    //    <section name="redisCache" type="RedisObjectCache.RedisCacheConfiguration, RedisObjectCache" />
     //  </configSections>
     //  <redisCache>
     //    <connection host = "127.0.0.1" [String]
@@ -15,12 +15,11 @@ namespace RedisObjectCache
     //          accessKey = "" [String]
     //          ssl = "false" [true|false]
     //          databaseId = "0" [number]
-    //          applicationName = "" [String]
     //          connectionTimeoutInMilliseconds = "5000" [number]
     //          operationTimeoutInMilliseconds = "5000" [number] />
     //  </redisCache>
     //</configuration>
-    internal sealed class RedisCacheConfiguration : ConfigurationSection
+    public sealed class RedisCacheConfiguration : ConfigurationSection
     {
         // Properties
         public static RedisCacheConfiguration Instance
@@ -35,7 +34,7 @@ namespace RedisObjectCache
         }
     }
 
-    internal class RedisConnectionConfiguration : ConfigurationElement
+    public class RedisConnectionConfiguration : ConfigurationElement
     {
         [ConfigurationProperty("host", DefaultValue = "127.0.0.1", IsRequired = true)]
         public String Host

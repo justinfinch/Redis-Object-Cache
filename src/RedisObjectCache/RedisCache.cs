@@ -51,17 +51,29 @@ namespace RedisObjectCache
 
         public override object AddOrGetExisting(string key, object value, CacheItemPolicy policy, string regionName = null)
         {
-            throw new NotImplementedException();
+            if (regionName != null)
+            {
+                throw new NotSupportedException(REGION_NOT_SUPPORTED);
+            }
+
+            return AddOrGetExistingInternal(key, value, policy);
         }
 
         public override CacheItem AddOrGetExisting(CacheItem value, CacheItemPolicy policy)
         {
-            throw new NotImplementedException();
+            AddOrGetExistingInternal(value.Key, value.Value, policy);
+            return value;
         }
 
         public override object AddOrGetExisting(string key, object value, DateTimeOffset absoluteExpiration, string regionName = null)
         {
-            throw new NotImplementedException();
+            if (regionName != null)
+            {
+                throw new NotSupportedException(REGION_NOT_SUPPORTED);
+            }
+
+            var policy = new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration};
+            return AddOrGetExistingInternal(key, value, policy);
         }
 
         public override bool Contains(string key, string regionName = null)
@@ -136,27 +148,8 @@ namespace RedisObjectCache
             {
                 throw new NotSupportedException(REGION_NOT_SUPPORTED);
             }
-            
-            if (key == null)
-            {
-                throw new ArgumentNullException("key");
-            }
 
-            DateTimeOffset absExp = InfiniteAbsoluteExpiration;
-            TimeSpan slidingExp = NoSlidingExpiration;
-            CacheItemPriority priority = CacheItemPriority.Default;
-            Collection<ChangeMonitor> changeMonitors = null;
-            CacheEntryRemovedCallback removedCallback = null;
-
-            if (policy != null)
-            {
-                ValidatePolicy(policy);
-                absExp = policy.AbsoluteExpiration;
-                slidingExp = policy.SlidingExpiration;
-                priority = policy.Priority;
-            }
-
-            _store.Set(new RedisCacheEntry(key, value, absExp, slidingExp, priority));
+            AddOrGetExistingInternal(key, value, policy);
         }
 
         public override void Set(CacheItem item, CacheItemPolicy policy)
@@ -183,11 +176,11 @@ namespace RedisObjectCache
         {
             get
             {
-                throw new NotImplementedException();
+                return GetInternal(key, null);
             }
             set
             {
-                throw new NotImplementedException();
+                Set(key, value, InfiniteAbsoluteExpiration);
             }
         }
 
@@ -209,6 +202,28 @@ namespace RedisObjectCache
             }
 
             return _store.Get(key);
+        }
+
+        private object AddOrGetExistingInternal(string key, object value, CacheItemPolicy policy)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            DateTimeOffset absExp = InfiniteAbsoluteExpiration;
+            TimeSpan slidingExp = NoSlidingExpiration;
+            CacheItemPriority priority = CacheItemPriority.Default;
+
+            if (policy != null)
+            {
+                ValidatePolicy(policy);
+                absExp = policy.AbsoluteExpiration;
+                slidingExp = policy.SlidingExpiration;
+                priority = policy.Priority;
+            }
+
+            return _store.Set(new RedisCacheEntry(key, value, absExp, slidingExp, priority));
         }
 
         private void ValidatePolicy(CacheItemPolicy policy)

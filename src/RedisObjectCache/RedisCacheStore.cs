@@ -17,7 +17,7 @@ namespace RedisObjectCache
             _redisDatabase = redisDatabase;
         }
 
-        internal void Set(RedisCacheEntry entry)
+        internal object Set(RedisCacheEntry entry)
         {
             var ttl = GetTtl(entry.State);
 
@@ -26,6 +26,8 @@ namespace RedisObjectCache
 
             _redisDatabase.StringSet(entry.Key, valueJson, ttl);
             _redisDatabase.StringSet(entry.StateKey, stateJson, ttl);
+
+            return entry.Value;
         }
 
         internal object Get(string key)
@@ -33,8 +35,10 @@ namespace RedisObjectCache
             var redisCacheKey = new RedisCacheKey(key);
 
             var stateJson = _redisDatabase.StringGet(redisCacheKey.StateKey);
-            var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
+            if (string.IsNullOrEmpty(stateJson))
+                return null;
 
+            var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
             var state = JsonConvert.DeserializeObject<RedisCacheEntryState>(stateJson);
             var value = JsonConvert.DeserializeObject(valueJson);
 
@@ -55,6 +59,9 @@ namespace RedisObjectCache
         {
             var redisCacheKey = new RedisCacheKey(key);
             var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
+            if (string.IsNullOrEmpty(valueJson))
+                return null;
+
             var value = JsonConvert.DeserializeObject(valueJson);
 
             _redisDatabase.KeyDelete(redisCacheKey.Key);
@@ -65,7 +72,7 @@ namespace RedisObjectCache
 
         private TimeSpan GetTtl(RedisCacheEntryState state)
         {
-            return state.AbsoluteExpiration.Subtract(DateTime.UtcNow);
+            return state.UtcAbsoluteExpiration.Subtract(DateTime.UtcNow);
         }
     }
 }

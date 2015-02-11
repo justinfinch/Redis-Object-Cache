@@ -9,17 +9,22 @@ namespace RedisObjectCache
 {
     internal class RedisCacheEntryState
     {
-        internal DateTime UtcCreated { get; private set; }
-        internal DateTime UtcAbsoluteExpiration { get; private set; }
-        internal DateTime UtcLastUpdateUsage { get; private set; }
+        public DateTime UtcCreated { get; set; }
+        public DateTime UtcAbsoluteExpiration { get; set; }
+        public DateTime UtcLastUpdateUsage { get; set; }
 
-        internal DateTimeOffset AbsoluteExpiration { get; private set; }
-        internal TimeSpan SlidingExpiration { get; private set; }
-        internal string Priority { get; private set; }
+        public DateTimeOffset AbsoluteExpiration { get; set; }
+        public TimeSpan SlidingExpiration { get; set; }
+        public string Priority { get; set; }
 
         public bool IsSliding
         {
             get { return SlidingExpiration > TimeSpan.Zero; }
+        }
+
+        internal RedisCacheEntryState()
+        {
+            
         }
 
         internal RedisCacheEntryState(DateTimeOffset absExp,
@@ -30,13 +35,14 @@ namespace RedisObjectCache
             SlidingExpiration = slidingExp;
             Priority = priority.ToString();
 
-            UtcCreated = UtcLastUpdateUsage = DateTime.UtcNow;
+            UtcCreated = DateTime.UtcNow;
 
             UpdateUsage();
         }
 
         internal void UpdateUsage()
         {
+            UtcLastUpdateUsage = DateTime.UtcNow;
             if (IsSliding)
             {
                 UtcAbsoluteExpiration = UtcLastUpdateUsage + SlidingExpiration;
