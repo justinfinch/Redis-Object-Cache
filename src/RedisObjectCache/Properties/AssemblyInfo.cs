@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Redis ObjectCache")]
 [assembly: AssemblyDescription("A implementation of .NET's ObjectCache for Redis.  Uses StackExchange.Redis.  Works with Azure Redis Cache.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Justin Finch")]
 [assembly: AssemblyProduct("RedisObjectCache")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
