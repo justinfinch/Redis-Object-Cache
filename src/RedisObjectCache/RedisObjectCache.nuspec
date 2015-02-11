@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <projectUrl>https://github.com/justinfinch/Redis-Object-Cache</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>Redis ObjectCache MemoryCache Azure</tags>
+    <dependencies>
+      <group>
+        <dependency  id="Newtonsoft.Json" version="6.0" />
+        <dependency  id="StackExchange.Redis" version="1.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
