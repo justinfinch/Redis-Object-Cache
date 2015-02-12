@@ -20,7 +20,7 @@ namespace RedisObjectCache
 
             _jsonSerializerSettings = new JsonSerializerSettings()
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             };
         }
 
