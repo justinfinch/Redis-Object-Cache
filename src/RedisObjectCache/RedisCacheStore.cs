@@ -12,18 +12,24 @@ namespace RedisObjectCache
     internal sealed class RedisCacheStore
     {
         private readonly IDatabase _redisDatabase;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         internal RedisCacheStore(IDatabase redisDatabase)
         {
             _redisDatabase = redisDatabase;
+
+            _jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+            };
         }
 
         internal object Set(RedisCacheEntry entry)
         {
             var ttl = GetTtl(entry.State);
 
-            var valueJson = JsonConvert.SerializeObject(entry.Value);
-            var stateJson = JsonConvert.SerializeObject(entry.State);
+            var valueJson = JsonConvert.SerializeObject(entry.Value, _jsonSerializerSettings);
+            var stateJson = JsonConvert.SerializeObject(entry.State, _jsonSerializerSettings);
 
             _redisDatabase.StringSet(entry.Key, valueJson, ttl);
             _redisDatabase.StringSet(entry.StateKey, stateJson, ttl);
@@ -47,7 +53,7 @@ namespace RedisObjectCache
             if (state.IsSliding)
             {
                 state.UpdateUsage();
-                stateJson = JsonConvert.SerializeObject(state);
+                stateJson = JsonConvert.SerializeObject(state, _jsonSerializerSettings);
 
                 var ttl = GetTtl(state);
                 _redisDatabase.StringSet(redisCacheKey.StateKey, stateJson, ttl);
