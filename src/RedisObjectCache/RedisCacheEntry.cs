@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -11,8 +12,9 @@ namespace RedisObjectCache
     {
         public object Value { get; set; }
         public RedisCacheEntryState State { get; set; }
+        public string TypeName { get; set; }
 
-        internal RedisCacheEntry(String key,
+        public RedisCacheEntry(String key,
                                   Object value,
                                   DateTimeOffset absExp,
                                   TimeSpan slidingExp,
@@ -20,7 +22,7 @@ namespace RedisObjectCache
             : base(key)
         {
             Value = value;
-            State = new RedisCacheEntryState(absExp, slidingExp, priority);
+            State = new RedisCacheEntryState(absExp, slidingExp, priority, value.GetType().AssemblyQualifiedName);
         }
     }
 }

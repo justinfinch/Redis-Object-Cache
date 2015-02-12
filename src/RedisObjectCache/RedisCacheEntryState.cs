@@ -16,6 +16,7 @@ namespace RedisObjectCache
         public DateTimeOffset AbsoluteExpiration { get; set; }
         public TimeSpan SlidingExpiration { get; set; }
         public string Priority { get; set; }
+        public string TypeName { get; set; }
 
         public bool IsSliding
         {
@@ -29,11 +30,13 @@ namespace RedisObjectCache
 
         internal RedisCacheEntryState(DateTimeOffset absExp,
                                   TimeSpan slidingExp,
-                                  CacheItemPriority priority)
+                                  CacheItemPriority priority,
+                                  string typeName)
         {
             AbsoluteExpiration = absExp;
             SlidingExpiration = slidingExp;
             Priority = priority.ToString();
+            TypeName = typeName;
 
             UtcCreated = DateTime.UtcNow;
 

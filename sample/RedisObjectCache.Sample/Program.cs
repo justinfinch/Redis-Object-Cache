@@ -14,7 +14,9 @@ namespace RedisObjectCache.Sample
                 LastName = "Smith"
             };
 
-            RedisCache.Default.Add("test_person_1", person1, new CacheItemPolicy(){ AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30))});
+            RedisCache.Default.Add("poco", person1, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
+            RedisCache.Default.Add("int", 123, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
+            RedisCache.Default.Add("string", "hello world", new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
             //RedisCache.Default.Add("test_person_1", person1, new CacheItemPolicy(){ SlidingExpiration = new TimeSpan(0, 0, 0, 30)});
 
             OutputItem();
@@ -23,9 +25,16 @@ namespace RedisObjectCache.Sample
 
         private static void OutputItem()
         {
-            var value = RedisCache.Default["test_person_1"];
-            var valueJson = JsonConvert.SerializeObject(value);
-            Console.Write(valueJson);
+            Console.WriteLine("====>POCO Object");
+            var person = (Person) RedisCache.Default["poco"];;
+            Console.WriteLine(person.FirstName);
+            Console.WriteLine(person.LastName);
+
+            Console.WriteLine("====>INT");
+            Console.WriteLine((int)RedisCache.Default["int"]);
+
+            Console.WriteLine("====>String");
+            Console.WriteLine(RedisCache.Default["string"]);
 
             Console.ReadLine();
 

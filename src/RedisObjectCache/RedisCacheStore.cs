@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -40,7 +41,8 @@ namespace RedisObjectCache
 
             var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
             var state = JsonConvert.DeserializeObject<RedisCacheEntryState>(stateJson);
-            var value = JsonConvert.DeserializeObject(valueJson);
+
+            var value = GetObjectFromString(valueJson, state.TypeName);
 
             if (state.IsSliding)
             {
@@ -73,6 +75,14 @@ namespace RedisObjectCache
         private TimeSpan GetTtl(RedisCacheEntryState state)
         {
             return state.UtcAbsoluteExpiration.Subtract(DateTime.UtcNow);
+        }
+
+        private object GetObjectFromString(string json, string typeName)
+        {
+            MethodInfo method = typeof(JsonConvert).GetMethods().FirstOrDefault(m => m.Name == "DeserializeObject" && m.IsGenericMethod);
+            var t = Type.GetType(typeName);
+            MethodInfo genericMethod = method.MakeGenericMethod(t);
+            return genericMethod.Invoke(null, new object[]{ json }); // No target, no arguments
         }
     }
 }
