@@ -54,6 +54,7 @@
     <Compile Include="RedisCacheConfiguration.cs" />
     <Compile Include="RedisCacheEntryState.cs" />
     <Compile Include="RedisCacheStore.cs" />
+    <Compile Include="RedisConnectionConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

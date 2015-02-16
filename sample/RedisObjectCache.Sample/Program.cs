@@ -3,7 +3,7 @@ using System.Runtime.Caching;
 
 namespace RedisObjectCache.Sample
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {

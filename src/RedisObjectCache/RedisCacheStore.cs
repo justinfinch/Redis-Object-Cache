@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -18,7 +15,7 @@ namespace RedisObjectCache
         {
             _redisDatabase = redisDatabase;
 
-            _jsonSerializerSettings = new JsonSerializerSettings()
+            _jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             };
