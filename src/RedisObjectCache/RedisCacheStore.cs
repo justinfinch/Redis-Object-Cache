@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 
 namespace RedisObjectCache
@@ -17,75 +17,65 @@ namespace RedisObjectCache
 
             _jsonSerializerSettings = new JsonSerializerSettings
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.Auto
             };
         }
 
         internal object Set(RedisCacheEntry entry)
         {
-            var ttl = GetTtl(entry.State);
+            var entryJson = JsonConvert.SerializeObject(entry, _jsonSerializerSettings);
+            _redisDatabase.StringSet(entry.Key, entryJson, entry.State.GetTtl());
 
-            var valueJson = JsonConvert.SerializeObject(entry.Value, _jsonSerializerSettings);
-            var stateJson = JsonConvert.SerializeObject(entry.State, _jsonSerializerSettings);
+            var itemValue = entry.ItemValue;
 
-            _redisDatabase.StringSet(entry.Key, valueJson, ttl);
-            _redisDatabase.StringSet(entry.StateKey, stateJson, ttl);
+            return itemValue;
+        }
 
-            return entry.Value;
+        private RedisCacheEntry DeserializeRedisCacheEntry(string entryJson)
+        {
+            var entryJsonParsed = JObject.Parse(entryJson);
+
+            var key = entryJsonParsed["Key"].ToString();
+            var itemType = entryJsonParsed["ItemType"].ToString();
+            var state = JsonConvert.DeserializeObject<RedisCacheEntryState>(entryJsonParsed["State"].ToString());
+            var itemValue = JsonConvert.DeserializeObject(entryJsonParsed["ItemValue"].ToString(), Type.GetType(itemType));
+
+            var redisCacheEntry = new RedisCacheEntry(key, itemValue, state.AbsoluteExpiration, state.SlidingExpiration, state.Priority);
+
+            return redisCacheEntry;
         }
 
         internal object Get(string key)
         {
-            var redisCacheKey = new RedisCacheKey(key);
+            var entryJson = _redisDatabase.StringGet(key);
 
-            var stateJson = _redisDatabase.StringGet(redisCacheKey.StateKey);
-            if (string.IsNullOrEmpty(stateJson))
+            if (string.IsNullOrEmpty(entryJson))
                 return null;
 
-            var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
-            var state = JsonConvert.DeserializeObject<RedisCacheEntryState>(stateJson);
+            var entry = DeserializeRedisCacheEntry(entryJson);
 
-            var value = GetObjectFromString(valueJson, state.TypeName);
-
-            if (state.IsSliding)
+            if (entry.State.IsSliding)
             {
-                state.UpdateUsage();
-                stateJson = JsonConvert.SerializeObject(state, _jsonSerializerSettings);
-
-                var ttl = GetTtl(state);
-                _redisDatabase.StringSet(redisCacheKey.StateKey, stateJson, ttl);
-                _redisDatabase.KeyExpire(redisCacheKey.Key, ttl);
+                _redisDatabase.KeyExpire(key, entry.State.GetTtl());
             }
 
-            return value;
+            var itemValue = entry.ItemValue;
+
+            return itemValue;
         }
 
         internal object Remove(string key)
         {
-            var redisCacheKey = new RedisCacheKey(key);
-            var valueJson = _redisDatabase.StringGet(redisCacheKey.Key);
-            if (string.IsNullOrEmpty(valueJson))
+            var entryJson = _redisDatabase.StringGet(key);
+            if (string.IsNullOrEmpty(entryJson))
                 return null;
+            _redisDatabase.KeyDelete(key);
 
-            var value = JsonConvert.DeserializeObject(valueJson);
+            var entry = DeserializeRedisCacheEntry(entryJson);
+            var itemValue = entry.ItemValue;
 
-            _redisDatabase.KeyDelete(redisCacheKey.Key);
-            _redisDatabase.KeyDelete(redisCacheKey.StateKey);
-
-            return value;
-        }
-
-        private TimeSpan GetTtl(RedisCacheEntryState state)
-        {
-            return state.UtcAbsoluteExpiration.Subtract(DateTime.UtcNow);
-        }
-
-        private object GetObjectFromString(string json, string typeName)
-        {
-            MethodInfo method = typeof(JsonConvert).GetMethods().FirstOrDefault(m => m.Name == "DeserializeObject" && m.IsGenericMethod);
-            var t = Type.GetType(typeName);
-            MethodInfo genericMethod = method.MakeGenericMethod(t);
-            return genericMethod.Invoke(null, new object[]{ json }); // No target, no arguments
+            return itemValue;
         }
     }
 }
