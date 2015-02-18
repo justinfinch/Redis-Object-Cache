@@ -1,26 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RedisObjectCache
 {
     internal class RedisCacheEntryState
     {
-        public DateTime UtcCreated { get; set; }
-        public DateTime UtcAbsoluteExpiration { get; set; }
-        public DateTime UtcLastUpdateUsage { get; set; }
-
         public DateTimeOffset AbsoluteExpiration { get; set; }
         public TimeSpan SlidingExpiration { get; set; }
         public string Priority { get; set; }
-        public string TypeName { get; set; }
 
+        [JsonIgnore]
         public bool IsSliding
         {
             get { return SlidingExpiration > TimeSpan.Zero; }
+        }
+
+        public TimeSpan GetTtl()
+        {
+            var absoluteExpirationTimespan = AbsoluteExpiration.Subtract(DateTime.UtcNow);
+
+            var ttl = absoluteExpirationTimespan > SlidingExpiration && IsSliding
+                ? SlidingExpiration
+                : absoluteExpirationTimespan;
+
+            if (ttl <= TimeSpan.Zero)
+            {
+                ttl = TimeSpan.FromSeconds(1); //There is a minimum expiry time of 1 second
+            }
+
+            return ttl;
         }
 
         internal RedisCacheEntryState()
@@ -28,32 +37,13 @@ namespace RedisObjectCache
             
         }
 
-        internal RedisCacheEntryState(DateTimeOffset absExp,
-                                  TimeSpan slidingExp,
-                                  CacheItemPriority priority,
-                                  string typeName)
+        internal RedisCacheEntryState(DateTimeOffset absoluteExpiration,
+                          TimeSpan slidingExpiration,
+                          string priority)
         {
-            AbsoluteExpiration = absExp;
-            SlidingExpiration = slidingExp;
-            Priority = priority.ToString();
-            TypeName = typeName;
-
-            UtcCreated = DateTime.UtcNow;
-
-            UpdateUsage();
-        }
-
-        internal void UpdateUsage()
-        {
-            UtcLastUpdateUsage = DateTime.UtcNow;
-            if (IsSliding)
-            {
-                UtcAbsoluteExpiration = UtcLastUpdateUsage + SlidingExpiration;
-            }
-            else
-            {
-                UtcAbsoluteExpiration = AbsoluteExpiration.UtcDateTime;
-            }
+            AbsoluteExpiration = absoluteExpiration;
+            SlidingExpiration = slidingExpiration;
+            Priority = priority;
         }
     }
 }

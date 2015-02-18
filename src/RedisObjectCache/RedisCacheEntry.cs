@@ -1,28 +1,35 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RedisObjectCache
 {
-    internal sealed class RedisCacheEntry : RedisCacheKey
+    internal sealed class RedisCacheEntry
     {
-        public object Value { get; set; }
+        public string Key { get; set; }
+        public object ItemValue { get; set; }
+        public string ItemType { get; set; }
+
         public RedisCacheEntryState State { get; set; }
-        public string TypeName { get; set; }
 
         public RedisCacheEntry(String key,
                                   Object value,
-                                  DateTimeOffset absExp,
-                                  TimeSpan slidingExp,
+                                  DateTimeOffset absoluteExpiration,
+                                  TimeSpan slidingExpiration,
                                   CacheItemPriority priority)
-            : base(key)
+            : this(key, value, absoluteExpiration, slidingExpiration, priority.ToString())
         {
-            Value = value;
-            State = new RedisCacheEntryState(absExp, slidingExp, priority, value.GetType().AssemblyQualifiedName);
+        }
+
+        public RedisCacheEntry(String key,
+                          Object value,
+                          DateTimeOffset absoluteExpiration,
+                          TimeSpan slidingExpiration,
+                          string priority)
+        {
+            Key = key;
+            ItemValue = value;
+            ItemType = value.GetType().AssemblyQualifiedName;
+            State = new RedisCacheEntryState(absoluteExpiration, slidingExpiration, priority);
         }
     }
 }

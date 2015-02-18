@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Runtime.Caching;
-using Newtonsoft.Json;
 
 namespace RedisObjectCache.Sample
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -14,27 +13,63 @@ namespace RedisObjectCache.Sample
                 LastName = "Smith"
             };
 
-            RedisCache.Default.Add("poco", person1, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
-            RedisCache.Default.Add("int", 123, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
-            RedisCache.Default.Add("string", "hello world", new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(30)) });
-            //RedisCache.Default.Add("test_person_1", person1, new CacheItemPolicy(){ SlidingExpiration = new TimeSpan(0, 0, 0, 30)});
+            const int secondsInCache = 10;
+
+            RedisCache.Default.Add("absolutePoco", person1, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(secondsInCache)) });
+            RedisCache.Default.Add("int", 123, new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(secondsInCache)) });
+            RedisCache.Default.Add("string", "hello world", new CacheItemPolicy() { AbsoluteExpiration = new DateTimeOffset(DateTime.UtcNow.AddSeconds(secondsInCache)) });
+            RedisCache.Default.Add("slidingPoco", person1, new CacheItemPolicy() { SlidingExpiration = new TimeSpan(0, 0, 0, secondsInCache) });
 
             OutputItem();
-
         }
 
         private static void OutputItem()
         {
             Console.WriteLine("====>POCO Object");
-            var person = (Person) RedisCache.Default["poco"];;
-            Console.WriteLine(person.FirstName);
-            Console.WriteLine(person.LastName);
+            var absolutePoco = RedisCache.Default["absolutePoco"] as Person;
+            if (absolutePoco != null)
+            {
+                Console.WriteLine(absolutePoco.FirstName);
+                Console.WriteLine(absolutePoco.LastName);
+            }
+            else
+            {
+                Console.WriteLine("Not in cache");
+            }
 
             Console.WriteLine("====>INT");
-            Console.WriteLine((int)RedisCache.Default["int"]);
+            var intValue = RedisCache.Default["int"] as int?;
+            if (intValue.HasValue)
+            {
+                Console.WriteLine(intValue);
+            }
+            else
+            {
+                Console.WriteLine("Not in cache");
+            }
 
             Console.WriteLine("====>String");
-            Console.WriteLine(RedisCache.Default["string"]);
+            var stringValue = RedisCache.Default["int"] as string;
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                Console.WriteLine(RedisCache.Default["stringValue"]);
+            }
+            else
+            {
+                Console.WriteLine("Not in cache");
+            }
+
+            Console.WriteLine("====>Sliding POCO Object");
+            var slidingPoco = RedisCache.Default["slidingPoco"] as Person;
+            if (slidingPoco != null)
+            {
+                Console.WriteLine(slidingPoco.FirstName);
+                Console.WriteLine(slidingPoco.LastName);
+            }
+            else
+            {
+                Console.WriteLine("Not in cache");
+            }
 
             Console.ReadLine();
 

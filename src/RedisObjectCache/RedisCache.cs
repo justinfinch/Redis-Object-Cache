@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using StackExchange.Redis;
 
 namespace RedisObjectCache
@@ -211,19 +207,19 @@ namespace RedisObjectCache
                 throw new ArgumentNullException("key");
             }
 
-            DateTimeOffset absExp = InfiniteAbsoluteExpiration;
-            TimeSpan slidingExp = NoSlidingExpiration;
+            DateTimeOffset absoluteExpiration = InfiniteAbsoluteExpiration;
+            TimeSpan slidingExpiration = NoSlidingExpiration;
             CacheItemPriority priority = CacheItemPriority.Default;
 
             if (policy != null)
             {
                 ValidatePolicy(policy);
-                absExp = policy.AbsoluteExpiration;
-                slidingExp = policy.SlidingExpiration;
+                absoluteExpiration = policy.AbsoluteExpiration;
+                slidingExpiration = policy.SlidingExpiration;
                 priority = policy.Priority;
             }
 
-            return _store.Set(new RedisCacheEntry(key, value, absExp, slidingExp, priority));
+            return _store.Set(new RedisCacheEntry(key, value, absoluteExpiration, slidingExpiration, priority));
         }
 
         private void ValidatePolicy(CacheItemPolicy policy)
