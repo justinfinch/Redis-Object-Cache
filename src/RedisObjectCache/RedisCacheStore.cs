@@ -17,8 +17,7 @@ namespace RedisObjectCache
 
             _jsonSerializerSettings = new JsonSerializerSettings
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.Auto
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             };
         }
 
