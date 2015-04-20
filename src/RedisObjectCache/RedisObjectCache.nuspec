@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/justinfinch/Redis-Object-Cache</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Initial release.</releaseNotes>
+    <releaseNotes>Added ability for JSON.NET to serialize/deserialize private setters.</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>Redis ObjectCache MemoryCache Azure</tags>
     <dependencies>
