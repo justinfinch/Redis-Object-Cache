@@ -14,8 +14,8 @@
     <tags>Redis ObjectCache MemoryCache Azure</tags>
     <dependencies>
       <group>
-        <dependency  id="Newtonsoft.Json" version="6.0" />
-        <dependency  id="StackExchange.Redis.StrongName" version="1.0.394" />
+        <dependency  id="Newtonsoft.Json" version="7.0.1" />
+        <dependency  id="StackExchange.Redis" version="1.0.488" />
       </group>
     </dependencies>
   </metadata>
