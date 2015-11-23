@@ -28,21 +28,12 @@ namespace RedisObjectCache
 
         private RedisCache()
         {
-            var connectionSettings = RedisCacheConfiguration.Instance.Connection;
+            _store = new RedisCacheStore();
+        }
 
-            var configurationOptions = new ConfigurationOptions
-            {
-                EndPoints = {{ connectionSettings.Host, connectionSettings.Port }},
-                ConnectTimeout = connectionSettings.ConnectionTimeoutInMilliseconds,
-                Password = connectionSettings.AccessKey,
-                Ssl = connectionSettings.Ssl,
-                SyncTimeout = connectionSettings.OperationTimeoutInMilliseconds
-
-            };
-
-            var redis = ConnectionMultiplexer.Connect(configurationOptions);
-            var database = redis.GetDatabase(RedisCacheConfiguration.Instance.Connection.DatabaseId);
-            _store = new RedisCacheStore(database);
+        public RedisCache(RedisCacheStore store)
+        {
+            _store = store;
         }
 
         public override object AddOrGetExisting(string key, object value, CacheItemPolicy policy, string regionName = null)

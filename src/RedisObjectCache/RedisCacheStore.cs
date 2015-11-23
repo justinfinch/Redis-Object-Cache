@@ -6,25 +6,41 @@ using StackExchange.Redis;
 
 namespace RedisObjectCache
 {
-    internal sealed class RedisCacheStore
+    public sealed class RedisCacheStore
     {
-        private readonly IDatabase _redisDatabase;
-        private readonly JsonSerializerSettings _jsonSerializerSettings;
-
-        internal RedisCacheStore(IDatabase redisDatabase)
+        private readonly IConnectionMultiplexer _connection;
+        private readonly JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
         {
-            _redisDatabase = redisDatabase;
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
 
-            _jsonSerializerSettings = new JsonSerializerSettings
+        public RedisCacheStore(IConnectionMultiplexer connection)
+        {
+            _connection = connection;
+        }
+
+        public RedisCacheStore()
+        {
+            var connectionSettings = RedisCacheConfiguration.Instance.Connection;
+
+            var configurationOptions = new ConfigurationOptions
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                EndPoints = { { connectionSettings.Host, connectionSettings.Port } },
+                ConnectTimeout = connectionSettings.ConnectionTimeoutInMilliseconds,
+                Password = connectionSettings.AccessKey,
+                Ssl = connectionSettings.Ssl,
+                SyncTimeout = connectionSettings.OperationTimeoutInMilliseconds
+
             };
+
+            _connection = ConnectionMultiplexer.Connect(configurationOptions);
         }
 
         internal object Set(RedisCacheEntry entry)
         {
+            var database = _connection.GetDatabase();
             var entryJson = JsonConvert.SerializeObject(entry, _jsonSerializerSettings);
-            _redisDatabase.StringSet(entry.Key, entryJson, entry.State.GetTtl());
+            database.StringSet(entry.Key, entryJson, entry.State.GetTtl());
 
             var itemValue = entry.ItemValue;
 
@@ -47,7 +63,8 @@ namespace RedisObjectCache
 
         internal object Get(string key)
         {
-            var entryJson = _redisDatabase.StringGet(key);
+            var database = _connection.GetDatabase();
+            var entryJson = database.StringGet(key);
 
             if (string.IsNullOrEmpty(entryJson))
                 return null;
@@ -56,7 +73,7 @@ namespace RedisObjectCache
 
             if (entry.State.IsSliding)
             {
-                _redisDatabase.KeyExpire(key, entry.State.GetTtl());
+                database.KeyExpire(key, entry.State.GetTtl());
             }
 
             var itemValue = entry.ItemValue;
@@ -66,10 +83,11 @@ namespace RedisObjectCache
 
         internal object Remove(string key)
         {
-            var entryJson = _redisDatabase.StringGet(key);
+            var database = _connection.GetDatabase();
+            var entryJson = database.StringGet(key);
             if (string.IsNullOrEmpty(entryJson))
                 return null;
-            _redisDatabase.KeyDelete(key);
+            database.KeyDelete(key);
 
             var entry = DeserializeRedisCacheEntry(entryJson);
             var itemValue = entry.ItemValue;
