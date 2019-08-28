@@ -211,6 +211,13 @@ namespace RedisObjectCache
                 throw new ArgumentNullException("key");
             }
 
+            object existingValue = this.Get(key);
+
+            if (existingValue  != null)
+            {
+                return existingValue;
+            }
+
             DateTimeOffset absExp = InfiniteAbsoluteExpiration;
             TimeSpan slidingExp = NoSlidingExpiration;
             CacheItemPriority priority = CacheItemPriority.Default;
