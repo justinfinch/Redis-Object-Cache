@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <package >
-  <metadata>
-    <id>$id$</id>
-    <version>$version$</version>
-    <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
-    <projectUrl>https://github.com/justinfinch/Redis-Object-Cache</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <releaseNotes>Added ability for JSON.NET to serialize/deserialize private setters.</releaseNotes>
-    <copyright>Copyright 2015</copyright>
-    <tags>Redis ObjectCache MemoryCache Azure</tags>
-    <dependencies>
-      <group>
-        <dependency  id="Newtonsoft.Json" version="6.0" />
-        <dependency  id="StackExchange.Redis.StrongName" version="1.0.394" />
-      </group>
-    </dependencies>
-  </metadata>
+	<metadata>
+		<id>$id$</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>$author$</authors>
+		<owners>$author$</owners>
+		<projectUrl>https://github.com/justinfinch/Redis-Object-Cache</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>$description$</description>
+		<releaseNotes>Added ability for JSON.NET to serialize/deserialize private setters.</releaseNotes>
+		<copyright>Copyright 2015 - 2022</copyright>
+		<tags>Redis ObjectCache MemoryCache Azure</tags>
+		<dependencies>
+			<group>
+				<dependency  id="Newtonsoft.Json" version="13.0.2-beta1" />
+				<dependency  id="StackExchange.Redis" version="2.6.48" />
+			</group>
+		</dependencies>
+	</metadata>
 </package>

@@ -167,8 +167,10 @@ namespace RedisObjectCache
             {
                 throw new NotSupportedException(REGION_NOT_SUPPORTED);
             }
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = absoluteExpiration;
+            CacheItemPolicy policy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = absoluteExpiration
+            };
             Set(key, value, policy);
         }
 
